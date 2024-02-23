@@ -1,5 +1,11 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const Allocator = std.mem.Allocator;
+
+const oshandler = switch (builtin.os.tag) {
+    .linux => @import("linux.zig"),
+    else => unreachable,
+};
 
 pub const AppDirs = enum {
     home,
@@ -27,16 +33,14 @@ pub const UserDirs = enum {
     videos,
 };
 
-pub fn getPath(comptime D: type, dir: D) []const u8 {
+pub fn getPath(alloc: Allocator, comptime D: type, dir: D) !?[]const u8 {
     _ = dir;
-    switch (builtin.os.tag) {
-        .linux => return "linux",
-        .windows => return "windows",
-        .macos => return "macos",
-        else => return "unknown",
-    }
+    return try oshandler.home_dir(alloc);
 }
 
 test "Test getPath" {
-    try std.testing.expectEqualStrings("linux", getPath(UserDirs, UserDirs.home));
+    var allocator = std.testing.allocator;
+    var result = try getPath(allocator, UserDirs, UserDirs.home);
+    defer allocator.free(result.?);
+    std.debug.print("{s}\n", .{result.?});
 }
