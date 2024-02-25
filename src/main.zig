@@ -56,11 +56,11 @@ pub const StandardDirs = struct {
 
 pub const UserDirs = struct {
     home: ?[]const u8,
-    audio: ?[]const u8,
+    music: ?[]const u8,
     desktop: ?[]const u8,
     documents: ?[]const u8,
     downloads: ?[]const u8,
-    fomt: ?[]const u8,
+    fomts: ?[]const u8,
     pictures: ?[]const u8,
     public: ?[]const u8,
     templates: ?[]const u8,
@@ -82,9 +82,11 @@ pub const UserDirs = struct {
     }
 };
 
-fn copyIfPresent(alloc: Allocator, val: ?[]const u8) !?[]const u8 {
+pub fn copyIfPresent(alloc: Allocator, val: ?[]const u8, default: ?[]const u8) !?[]const u8 {
     if (val) |inner| {
         return try alloc.dupe(u8, inner);
+    } else if (default) |d| {
+        return try alloc.dupe(u8, d);
     } else {
         return null;
     }
@@ -96,5 +98,5 @@ test "Test getPath" {
     defer appdirs.deinit();
     // var result = try getPath(allocator, UserDirs, UserDirs.home);
     // defer allocator.free(result.?);
-    std.debug.print("{s}\n", .{appdirs.user_dirs.home.?});
+    std.debug.print("{s}\n", .{appdirs.user_dirs.downloads.?});
 }
